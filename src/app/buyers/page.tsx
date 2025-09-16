@@ -70,40 +70,46 @@ export default function BuyerList() {
   const fetchBuyers = useCallback(async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from("buyers")
-        .select("*", { count: "exact" });
-
-      // Apply search
-      if (debouncedSearch) {
-        query = query.or(`full_name.ilike.%${debouncedSearch}%,phone.ilike.%${debouncedSearch}%,email.ilike.%${debouncedSearch}%`);
+      const response = await fetch('/api/buyers');
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch buyers');
       }
 
-      // Apply filters
+      let filteredBuyers = result.buyers || [];
+
+      // Apply search filter
+      if (debouncedSearch) {
+        const searchLower = debouncedSearch.toLowerCase();
+        filteredBuyers = filteredBuyers.filter((buyer: Buyer) => 
+          buyer.full_name.toLowerCase().includes(searchLower) ||
+          buyer.phone.includes(debouncedSearch) ||
+          (buyer.email && buyer.email.toLowerCase().includes(searchLower))
+        );
+      }
+
+      // Apply other filters
       if (cityFilter !== "all") {
-        query = query.eq("city", cityFilter as any);
+        filteredBuyers = filteredBuyers.filter((buyer: Buyer) => buyer.city === cityFilter);
       }
       if (propertyTypeFilter !== "all") {
-        query = query.eq("property_type", propertyTypeFilter as any);
+        filteredBuyers = filteredBuyers.filter((buyer: Buyer) => buyer.property_type === propertyTypeFilter);
       }
       if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter as any);
+        filteredBuyers = filteredBuyers.filter((buyer: Buyer) => buyer.status === statusFilter);
       }
       if (timelineFilter !== "all") {
-        query = query.eq("timeline", timelineFilter as any);
+        filteredBuyers = filteredBuyers.filter((buyer: Buyer) => buyer.timeline === timelineFilter);
       }
 
-      // Apply pagination and sorting
-      query = query
-        .order("updated_at", { ascending: false })
-        .range((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE - 1);
+      // Apply pagination
+      const startIndex = (currentPage - 1) * PAGE_SIZE;
+      const endIndex = startIndex + PAGE_SIZE;
+      const paginatedBuyers = filteredBuyers.slice(startIndex, endIndex);
 
-      const { data, count, error } = await query;
-
-      if (error) throw error;
-
-      setBuyers(data || []);
-      setTotalCount(count || 0);
+      setBuyers(paginatedBuyers);
+      setTotalCount(filteredBuyers.length);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -131,21 +137,14 @@ export default function BuyerList() {
 
   const exportToCsv = async () => {
     try {
-      // Get all buyers with current filters (no pagination)
-      let query = supabase.from("buyers").select("*");
-
-      if (debouncedSearch) {
-        query = query.or(`full_name.ilike.%${debouncedSearch}%,phone.ilike.%${debouncedSearch}%,email.ilike.%${debouncedSearch}%`);
+      const response = await fetch('/api/buyers');
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch buyers');
       }
-      if (cityFilter !== "all") query = query.eq("city", cityFilter as any);
-      if (propertyTypeFilter !== "all") query = query.eq("property_type", propertyTypeFilter as any);
-      if (statusFilter !== "all") query = query.eq("status", statusFilter as any);
-      if (timelineFilter !== "all") query = query.eq("timeline", timelineFilter as any);
 
-      query = query.order("updated_at", { ascending: false });
-
-      const { data, error } = await query;
-      if (error) throw error;
+      let data = result.buyers || [];
 
       // Create CSV content
       const headers = [
@@ -201,10 +200,10 @@ export default function BuyerList() {
         <div className="space-y-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold text-black">
                 Buyer Leads
               </h1>
-              <p className="text-slate-600 dark:text-slate-300 mt-2">
+              <p className="text-black mt-2">
                 Manage and track your property buyer leads
               </p>
             </div>
@@ -231,7 +230,7 @@ export default function BuyerList() {
 
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+              <CardTitle className="text-lg font-semibold text-black">
                 🔍 Search & Filter
               </CardTitle>
             </CardHeader>
@@ -316,7 +315,7 @@ export default function BuyerList() {
 
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+              <CardTitle className="text-lg font-semibold text-black">
                 📊 Buyers ({totalCount} total)
               </CardTitle>
             </CardHeader>
@@ -370,11 +369,14 @@ export default function BuyerList() {
                             </TableCell>
                             <TableCell>{buyer.timeline}</TableCell>
                             <TableCell>
-                              <Badge variant={
-                                buyer.status === 'Converted' ? 'default' :
-                                buyer.status === 'Dropped' ? 'destructive' :
-                                buyer.status === 'New' ? 'secondary' : 'outline'
-                              }>
+                              <Badge 
+                                variant={
+                                  buyer.status === 'Converted' ? 'default' :
+                                  buyer.status === 'Dropped' ? 'destructive' :
+                                  buyer.status === 'New' ? 'secondary' : 'outline'
+                                }
+                                className="text-black"
+                              >
                                 {buyer.status}
                               </Badge>
                             </TableCell>

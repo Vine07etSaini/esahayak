@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { buyerSchema, BuyerFormData } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ export default function BuyerForm({ defaultValues, onSubmit, loading, title }: B
     handleSubmit,
     watch,
     setValue,
+    control,
     formState: { errors },
   } = useForm<BuyerFormData>({
     resolver: zodResolver(buyerSchema),
@@ -110,18 +111,24 @@ export default function BuyerForm({ defaultValues, onSubmit, loading, title }: B
             {/* City */}
             <div className="space-y-2">
               <Label htmlFor="city">City *</Label>
-              <Select onValueChange={(value) => setValue("city", value as any)} defaultValue={defaultValues?.city}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select city" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Chandigarh">Chandigarh</SelectItem>
-                  <SelectItem value="Mohali">Mohali</SelectItem>
-                  <SelectItem value="Zirakpur">Zirakpur</SelectItem>
-                  <SelectItem value="Panchkula">Panchkula</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="city"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select city" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border shadow-lg z-50">
+                      <SelectItem value="Chandigarh">Chandigarh</SelectItem>
+                      <SelectItem value="Mohali">Mohali</SelectItem>
+                      <SelectItem value="Zirakpur">Zirakpur</SelectItem>
+                      <SelectItem value="Panchkula">Panchkula</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.city && (
                 <p className="text-sm text-destructive">{errors.city.message}</p>
               )}
@@ -130,18 +137,24 @@ export default function BuyerForm({ defaultValues, onSubmit, loading, title }: B
             {/* Property Type */}
             <div className="space-y-2">
               <Label htmlFor="propertyType">Property Type *</Label>
-              <Select onValueChange={(value) => setValue("propertyType", value as any)} defaultValue={defaultValues?.propertyType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select property type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Apartment">Apartment</SelectItem>
-                  <SelectItem value="Villa">Villa</SelectItem>
-                  <SelectItem value="Plot">Plot</SelectItem>
-                  <SelectItem value="Office">Office</SelectItem>
-                  <SelectItem value="Retail">Retail</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="propertyType"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select property type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border shadow-lg z-50">
+                      <SelectItem value="Apartment">Apartment</SelectItem>
+                      <SelectItem value="Villa">Villa</SelectItem>
+                      <SelectItem value="Plot">Plot</SelectItem>
+                      <SelectItem value="Office">Office</SelectItem>
+                      <SelectItem value="Retail">Retail</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.propertyType && (
                 <p className="text-sm text-destructive">{errors.propertyType.message}</p>
               )}
@@ -151,18 +164,24 @@ export default function BuyerForm({ defaultValues, onSubmit, loading, title }: B
             {(propertyType === "Apartment" || propertyType === "Villa") && (
               <div className="space-y-2">
                 <Label htmlFor="bhk">BHK *</Label>
-                <Select onValueChange={(value) => setValue("bhk", value as any)} defaultValue={defaultValues?.bhk}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select BHK" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 BHK</SelectItem>
-                    <SelectItem value="2">2 BHK</SelectItem>
-                    <SelectItem value="3">3 BHK</SelectItem>
-                    <SelectItem value="4">4 BHK</SelectItem>
-                    <SelectItem value="Studio">Studio</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="bhk"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select BHK" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border shadow-lg z-50">
+                        <SelectItem value="1">1 BHK</SelectItem>
+                        <SelectItem value="2">2 BHK</SelectItem>
+                        <SelectItem value="3">3 BHK</SelectItem>
+                        <SelectItem value="4">4 BHK</SelectItem>
+                        <SelectItem value="Studio">Studio</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.bhk && (
                   <p className="text-sm text-destructive">{errors.bhk.message}</p>
                 )}
@@ -172,15 +191,21 @@ export default function BuyerForm({ defaultValues, onSubmit, loading, title }: B
             {/* Purpose */}
             <div className="space-y-2">
               <Label htmlFor="purpose">Purpose *</Label>
-              <Select onValueChange={(value) => setValue("purpose", value as any)} defaultValue={defaultValues?.purpose}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select purpose" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Buy">Buy</SelectItem>
-                  <SelectItem value="Rent">Rent</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="purpose"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select purpose" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border shadow-lg z-50">
+                      <SelectItem value="Buy">Buy</SelectItem>
+                      <SelectItem value="Rent">Rent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.purpose && (
                 <p className="text-sm text-destructive">{errors.purpose.message}</p>
               )}
@@ -217,17 +242,23 @@ export default function BuyerForm({ defaultValues, onSubmit, loading, title }: B
             {/* Timeline */}
             <div className="space-y-2">
               <Label htmlFor="timeline">Timeline *</Label>
-              <Select onValueChange={(value) => setValue("timeline", value as any)} defaultValue={defaultValues?.timeline}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select timeline" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0-3m">0-3 months</SelectItem>
-                  <SelectItem value="3-6m">3-6 months</SelectItem>
-                  <SelectItem value=">6m">More than 6 months</SelectItem>
-                  <SelectItem value="Exploring">Exploring</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="timeline"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select timeline" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border shadow-lg z-50">
+                      <SelectItem value="0-3m">0-3 months</SelectItem>
+                      <SelectItem value="3-6m">3-6 months</SelectItem>
+                      <SelectItem value=">6m">More than 6 months</SelectItem>
+                      <SelectItem value="Exploring">Exploring</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.timeline && (
                 <p className="text-sm text-destructive">{errors.timeline.message}</p>
               )}
@@ -236,18 +267,24 @@ export default function BuyerForm({ defaultValues, onSubmit, loading, title }: B
             {/* Source */}
             <div className="space-y-2">
               <Label htmlFor="source">Source *</Label>
-              <Select onValueChange={(value) => setValue("source", value as any)} defaultValue={defaultValues?.source}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select source" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Website">Website</SelectItem>
-                  <SelectItem value="Referral">Referral</SelectItem>
-                  <SelectItem value="Walk-in">Walk-in</SelectItem>
-                  <SelectItem value="Call">Call</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="source"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select source" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border shadow-lg z-50">
+                      <SelectItem value="Website">Website</SelectItem>
+                      <SelectItem value="Referral">Referral</SelectItem>
+                      <SelectItem value="Walk-in">Walk-in</SelectItem>
+                      <SelectItem value="Call">Call</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.source && (
                 <p className="text-sm text-destructive">{errors.source.message}</p>
               )}
@@ -256,20 +293,26 @@ export default function BuyerForm({ defaultValues, onSubmit, loading, title }: B
             {/* Status */}
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Select onValueChange={(value) => setValue("status", value as any)} defaultValue={defaultValues?.status || 'New'}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="New">New</SelectItem>
-                  <SelectItem value="Qualified">Qualified</SelectItem>
-                  <SelectItem value="Contacted">Contacted</SelectItem>
-                  <SelectItem value="Visited">Visited</SelectItem>
-                  <SelectItem value="Negotiation">Negotiation</SelectItem>
-                  <SelectItem value="Converted">Converted</SelectItem>
-                  <SelectItem value="Dropped">Dropped</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border shadow-lg z-50">
+                      <SelectItem value="New">New</SelectItem>
+                      <SelectItem value="Qualified">Qualified</SelectItem>
+                      <SelectItem value="Contacted">Contacted</SelectItem>
+                      <SelectItem value="Visited">Visited</SelectItem>
+                      <SelectItem value="Negotiation">Negotiation</SelectItem>
+                      <SelectItem value="Converted">Converted</SelectItem>
+                      <SelectItem value="Dropped">Dropped</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.status && (
                 <p className="text-sm text-destructive">{errors.status.message}</p>
               )}
@@ -317,9 +360,9 @@ export default function BuyerForm({ defaultValues, onSubmit, loading, title }: B
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Buyer Lead
+            {loading ? "Saving..." : "Save Buyer Lead"}
           </Button>
         </form>
       </CardContent>

@@ -101,15 +101,11 @@ export default function BuyerDetail() {
 
   const fetchHistory = async () => {
     try {
-      const { data, error } = await supabase
-        .from("buyer_history")
-        .select("*")
-        .eq("buyer_id", id)
-        .order("changed_at", { ascending: false })
-        .limit(5);
-
-      if (error) throw error;
-      setHistory(data || []);
+      const response = await fetch(`/api/buyers/${id}/history`);
+      if (response.ok) {
+        const result = await response.json();
+        setHistory(result.history || []);
+      }
     } catch (error: any) {
       console.error("Failed to fetch history:", error);
     }
@@ -120,69 +116,22 @@ export default function BuyerDetail() {
     
     setSaving(true);
     try {
-      // Check for concurrent updates
-      const { data: currentBuyer, error: fetchError } = await supabase
-        .from("buyers")
-        .select("updated_at")
-        .eq("id", buyer.id)
-        .single();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
 
-      if (fetchError) throw fetchError;
-
-      if (currentBuyer.updated_at !== buyer.updated_at) {
-        toast({
-          title: "Record changed",
-          description: "This record has been updated by someone else. Please refresh and try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Calculate diff for history
-      const changes: any = {};
-      Object.keys(data).forEach((key) => {
-        const oldValue = buyer[key as keyof BuyerFormData];
-        const newValue = data[key as keyof BuyerFormData];
-        if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
-          changes[key] = { from: oldValue, to: newValue };
-        }
+      const response = await fetch(`/api/buyers/${buyer.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ ...data, updatedAt: buyer.updated_at }),
       });
 
-      // Update buyer
-      const { error: updateError } = await supabase
-        .from("buyers")
-        .update({
-          full_name: data.fullName,
-          email: data.email || null,
-          phone: data.phone,
-          city: data.city,
-          property_type: data.propertyType,
-          bhk: data.bhk || null,
-          purpose: data.purpose,
-          budget_min: data.budgetMin || null,
-          budget_max: data.budgetMax || null,
-          timeline: data.timeline,
-          source: data.source,
-          status: data.status,
-          notes: data.notes || null,
-          tags: data.tags,
-        })
-        .eq("id", buyer.id);
-
-      if (updateError) throw updateError;
-
-      // Add history entry if there were changes
-      if (Object.keys(changes).length > 0) {
-        await supabase
-          .from("buyer_history")
-          .insert([{
-            buyer_id: buyer.id,
-            changed_by: user.id,
-            diff: {
-              action: "updated",
-              changes,
-            },
-          }]);
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update buyer');
       }
 
       toast({
@@ -190,7 +139,6 @@ export default function BuyerDetail() {
         description: "Buyer updated successfully",
       });
 
-      // Refresh data
       fetchBuyer();
       fetchHistory();
     } catch (error: any) {
@@ -209,12 +157,21 @@ export default function BuyerDetail() {
     
     setDeleting(true);
     try {
-      const { error } = await supabase
-        .from("buyers")
-        .delete()
-        .eq("id", buyer.id);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
 
-      if (error) throw error;
+      const response = await fetch(`/api/buyers/${buyer.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete buyer');
+      }
 
       toast({
         title: "Success",
@@ -355,7 +312,6 @@ export default function BuyerDetail() {
             </Card>
           )}
 
-          {/* History */}
           <Card>
             <CardHeader>
               <CardTitle>Recent Changes</CardTitle>
@@ -365,25 +321,21 @@ export default function BuyerDetail() {
                 <p className="text-muted-foreground">No changes recorded</p>
               ) : (
                 <div className="space-y-4">
-                  {history.map((entry) => (
-                    <div key={entry.id} className="border-l-2 border-muted pl-4">
-                      <div className="text-sm font-medium">
-                        {entry.diff.action === "created" ? "Lead created" : "Lead updated"}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {format(new Date(entry.changed_at), "PPp")}
-                      </div>
-                      {entry.diff.changes && (
-                        <div className="text-sm mt-1">
-                          {Object.entries(entry.diff.changes).map(([field, change]: [string, any]) => (
-                            <div key={field}>
-                              <span className="font-medium">{field}:</span> {JSON.stringify(change.from)} → {JSON.stringify(change.to)}
-                            </div>
-                          ))}
+                  {history.map((entry) => {
+                    return (
+                      <div key={entry.id} className="border-l-2 border-muted pl-4">
+                        <div className="text-sm font-medium">
+                          {entry.diff?.action === "created" ? "Lead created" : "Lead updated"}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        <div className="text-sm text-muted-foreground">
+                          {format(new Date(entry.changed_at), "PPp")}
+                        </div>
+                        <div className="text-sm mt-1">
+                          {entry.diff?.details}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

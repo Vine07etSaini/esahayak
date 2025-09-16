@@ -19,8 +19,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [redirectUrl, setRedirectUrl] = useState('');
 
   useEffect(() => {
+    // Set redirect URL on client side
+    setRedirectUrl(`${window.location.origin}/`);
+    
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -49,8 +53,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/` : '';
-    
     const { error } = await supabase.auth.signUp({
       email,
       password,

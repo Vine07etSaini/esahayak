@@ -98,7 +98,7 @@ import {
 import { Users, Plus, FileText, CheckCircle, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { motion } from "framer-motion";
+
 
 export default function LandingPage() {
   const { user } = useAuth();
@@ -149,12 +149,7 @@ export default function LandingPage() {
       <main className="container mx-auto px-6 py-14">
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           {/* Hero Text */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-6"
-          >
+          <div className="space-y-6">
             <div className="max-w-xl">
               <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
                 Capture, qualify, and convert buyer leads —
@@ -203,15 +198,10 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Static Sample Form */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex justify-center lg:justify-end"
-          >
+          <div className="flex justify-center lg:justify-end">
             <div className="w-full max-w-md">
               <div className="rounded-2xl shadow-xl overflow-hidden">
                 <div className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 p-4">
@@ -278,7 +268,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </section>
 
         {/* Features section */}

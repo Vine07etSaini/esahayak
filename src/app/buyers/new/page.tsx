@@ -21,42 +21,23 @@ export default function NewBuyer() {
     
     setLoading(true);
     try {
-      // Insert buyer
-      const { data: buyer, error } = await supabase
-        .from("buyers")
-        .insert([{
-          full_name: data.fullName,
-          email: data.email || null,
-          phone: data.phone,
-          city: data.city,
-          property_type: data.propertyType,
-          bhk: data.bhk || null,
-          purpose: data.purpose,
-          budget_min: data.budgetMin || null,
-          budget_max: data.budgetMax || null,
-          timeline: data.timeline,
-          source: data.source,
-          status: data.status,
-          notes: data.notes || null,
-          tags: data.tags,
-          owner_id: user.id,
-        }])
-        .select()
-        .single();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
 
-      if (error) throw error;
+      const response = await fetch('/api/buyers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(data),
+      });
 
-      // Create history entry
-      await supabase
-        .from("buyer_history")
-        .insert([{
-          buyer_id: buyer.id,
-          changed_by: user.id,
-          diff: {
-            action: "created",
-            changes: data,
-          },
-        }]);
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create buyer');
+      }
 
       toast({
         title: "Success",
