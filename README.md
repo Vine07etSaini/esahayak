@@ -1,36 +1,184 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Esahayak - Buyer Lead Management System
 
-## Getting Started
+A comprehensive buyer lead management system built with Next.js 15, TypeScript, and Supabase.
 
-First, run the development server:
+## 🚀 Quick Start
 
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Supabase account
+
+### 1. Clone & Install
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd esahayak
+npm install --legacy-peer-deps
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Setup
+```bash
+cp .env.example .env.local
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Add your Supabase credentials to `.env.local`:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Database Setup
+Run the migration scripts in your Supabase SQL editor:
+```bash
+# Copy contents from migrations/001_initial_schema.sql
+# Run in Supabase Dashboard > SQL Editor
+```
 
-## Learn More
+### 4. Run Locally
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Visit `http://localhost:3000`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📁 Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   │   ├── buyers/        # Buyer CRUD operations
+│   │   └── hello/         # Test endpoint
+│   ├── buyers/            # Buyer management pages
+│   │   └── new/           # Create new buyer form
+│   ├── globals.css        # Global styles
+│   ├── layout.tsx         # Root layout
+│   └── page.tsx           # Home page
+├── lib/                   # Utilities
+│   └── supabase.ts        # Supabase client config
+└── components/            # React components (future)
+```
 
-## Deploy on Vercel
+## 🗄️ Database Schema
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Buyers Table
+```sql
+buyers (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name text NOT NULL,
+  email text,
+  phone text NOT NULL,
+  city text,
+  property_type text,
+  bhk integer,
+  purpose text,
+  budget_min integer,
+  budget_max integer,
+  timeline text,
+  source text,
+  notes text,
+  tags text[],
+  owner_id uuid NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+)
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Buyer History Table
+```sql
+buyer_history (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  buyer_id uuid REFERENCES buyers(id) ON DELETE CASCADE,
+  action text NOT NULL,
+  details text,
+  created_at timestamptz DEFAULT now(),
+  created_by uuid NOT NULL
+)
+```
+
+## 🏗️ Design Architecture
+
+### Validation Strategy
+- **Client-side**: Real-time form validation using React state
+- **Server-side**: API route validation before database operations
+- **Schema**: Zod schemas for type-safe validation (future enhancement)
+
+### Rendering Strategy
+- **SSR**: Server components for data fetching and SEO
+- **Client**: Interactive forms and dynamic UI components
+- **API Routes**: Server-side business logic and database operations
+
+### Ownership Enforcement
+- **User Context**: All records tied to `owner_id`
+- **API Security**: Server-side ownership checks on all operations
+- **History Tracking**: Audit trail for all data modifications
+
+## 🛠️ Available Scripts
+
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+```
+
+## 📋 Features
+
+### ✅ Implemented
+- Create new buyer leads with validation
+- Supabase integration
+- Form validation (client + server)
+- Database schema with history tracking
+- TypeScript support
+- Tailwind CSS styling
+- Authentication system
+- Lead listing and search
+- Edit/delete operations
+- CSV import/export
+- Advanced filtering
+- Dashboard analytics
+
+## 🔧 API Endpoints
+
+### Buyers
+- `POST /api/buyers` - Create new buyer lead
+- `GET /api/hello` - Test Supabase connection
+
+## 🎨 Styling
+
+- **Framework**: Tailwind CSS
+- **Components**: Custom components with Tailwind classes
+- **Theme**: CSS variables for consistent theming
+- **Responsive**: Mobile-first responsive design
+
+## 🔒 Security
+
+- Environment variables for sensitive data
+- Server-side validation on all inputs
+- Ownership-based access control
+- SQL injection protection via Supabase client
+
+## 🐛 Troubleshooting
+
+### Tailwind CSS not working
+1. Restart development server: `npm run dev`
+2. Check `tailwind.config.ts` syntax
+3. Verify `globals.css` imports Tailwind directives
+
+### Supabase connection issues
+1. Verify credentials in `.env.local`
+2. Check Supabase project status
+3. Ensure database tables exist
+
+### Form validation errors
+1. Check browser console for client errors
+2. Verify API response in Network tab
+3. Check server logs for validation failures
+
+## 📝 Development Notes
+
+- Use TypeScript for all new files
+- Follow Next.js App Router conventions
+- Implement server-side validation for all forms
+- Add history tracking for data changes
+- Use Supabase RLS for production security
